@@ -105,9 +105,11 @@ struct member_overload<multicast_tag>
         class SourceValue = rxu::value_type_t<Observable>,
         class Multicast = rxo::detail::multicast<SourceValue, rxu::decay_t<Observable>, rxu::decay_t<Subject>>,
         class Value = rxu::value_type_t<Multicast>,
-        class Result = connectable_observable<Value, Multicast>>
+        class TypeErased = type_erased_observable_t<Value, Multicast>,
+        class Result = connectable_observable<Value, TypeErased>
+    >
     static Result member(Observable&& o, Subject&& sub) {
-        return Result(Multicast(std::forward<Observable>(o), std::forward<Subject>(sub)));
+        return Result(make_type_erased<Value>(Multicast(std::forward<Observable>(o), std::forward<Subject>(sub))));
     }
 
     template<class... AN>

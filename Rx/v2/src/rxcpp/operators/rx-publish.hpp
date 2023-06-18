@@ -97,10 +97,11 @@ struct member_overload<publish_tag>
         class SourceValue = rxu::value_type_t<Observable>,
         class Subject = rxsub::subject<SourceValue>,
         class Multicast = rxo::detail::multicast<SourceValue, rxu::decay_t<Observable>, Subject>,
-        class Result = connectable_observable<SourceValue, Multicast>
-        >
+        class TypeErased = type_erased_observable_t<SourceValue, Multicast>,
+        class Result = connectable_observable<SourceValue, TypeErased>
+    >
     static Result member(Observable&& o) {
-        return Result(Multicast(std::forward<Observable>(o), Subject(composite_subscription())));
+        return Result(make_type_erased<SourceValue>(Multicast(std::forward<Observable>(o), Subject(composite_subscription()))));
     }
 
     template<class Observable,
@@ -109,10 +110,11 @@ struct member_overload<publish_tag>
         class SourceValue = rxu::value_type_t<Observable>,
         class Subject = rxsub::subject<SourceValue>,
         class Multicast = rxo::detail::multicast<SourceValue, rxu::decay_t<Observable>, Subject>,
-        class Result = connectable_observable<SourceValue, Multicast>
-        >
+        class TypeErased = type_erased_observable_t<SourceValue, Multicast>,
+        class Result = connectable_observable<SourceValue, TypeErased>
+    >
     static Result member(Observable&& o, composite_subscription cs) {
-        return Result(Multicast(std::forward<Observable>(o), Subject(cs)));
+        return Result(make_type_erased<SourceValue>(Multicast(std::forward<Observable>(o), Subject(cs))));
     }
 
     template<class Observable, class T,
@@ -121,10 +123,11 @@ struct member_overload<publish_tag>
         class SourceValue = rxu::value_type_t<Observable>,
         class Subject = rxsub::behavior<SourceValue>,
         class Multicast = rxo::detail::multicast<SourceValue, rxu::decay_t<Observable>, Subject>,
-        class Result = connectable_observable<SourceValue, Multicast>
-        >
+        class TypeErased = type_erased_observable_t<SourceValue, Multicast>,
+        class Result = connectable_observable<SourceValue, TypeErased>
+    >
     static Result member(Observable&& o, T first, composite_subscription cs = composite_subscription()) {
-        return Result(Multicast(std::forward<Observable>(o), Subject(first, cs)));
+        return Result(make_type_erased<SourceValue>(Multicast(std::forward<Observable>(o), Subject(first, cs))));
     }
 
     template<class... AN>
@@ -145,10 +148,11 @@ struct member_overload<publish_synchronized_tag>
         class SourceValue = rxu::value_type_t<Observable>,
         class Subject = rxsub::synchronize<SourceValue, rxu::decay_t<Coordination>>,
         class Multicast = rxo::detail::multicast<SourceValue, rxu::decay_t<Observable>, Subject>,
-        class Result = connectable_observable<SourceValue, Multicast>
-        >
+        class TypeErased = type_erased_observable_t<SourceValue, Multicast>,
+        class Result = connectable_observable<SourceValue, TypeErased>
+    >
     static Result member(Observable&& o, Coordination&& cn, composite_subscription cs = composite_subscription()) {
-        return Result(Multicast(std::forward<Observable>(o), Subject(std::forward<Coordination>(cn), cs)));
+        return Result(make_type_erased<SourceValue>(Multicast(std::forward<Observable>(o), Subject(std::forward<Coordination>(cn), cs))));
     }
 
     template<class... AN>

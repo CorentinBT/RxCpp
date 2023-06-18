@@ -312,10 +312,11 @@ struct member_overload<concat_map_tag>
         class ConcatMap = rxo::detail::concat_map<rxu::decay_t<Observable>, rxu::decay_t<CollectionSelector>, ResultSelectorType, identity_one_worker>,
         class CollectionValueType = rxu::value_type_t<CollectionType>,
         class Value = rxu::callable_result_t<ResultSelectorType, SourceValue, CollectionValueType>,
-        class Result = observable<Value, ConcatMap>
+        class TypeErased = type_erased_observable_t<Value, ConcatMap>,
+        class Result = observable<Value, TypeErased>
     >
     static Result member(Observable&& o, CollectionSelector&& s) {
-        return Result(ConcatMap(std::forward<Observable>(o), std::forward<CollectionSelector>(s), ResultSelectorType(), identity_current_thread()));
+        return Result(make_type_erased<Value>(ConcatMap(std::forward<Observable>(o), std::forward<CollectionSelector>(s), ResultSelectorType(), identity_current_thread())));
     }
 
     template<class Observable, class CollectionSelector, class Coordination,
@@ -329,10 +330,11 @@ struct member_overload<concat_map_tag>
         class ConcatMap = rxo::detail::concat_map<rxu::decay_t<Observable>, rxu::decay_t<CollectionSelector>, ResultSelectorType, rxu::decay_t<Coordination>>,
         class CollectionValueType = rxu::value_type_t<CollectionType>,
         class Value = rxu::callable_result_t<ResultSelectorType, SourceValue, CollectionValueType>,
-        class Result = observable<Value, ConcatMap>
+        class TypeErased = type_erased_observable_t<Value, ConcatMap>,
+        class Result = observable<Value, TypeErased>
     >
     static Result member(Observable&& o, CollectionSelector&& s, Coordination&& cn) {
-        return Result(ConcatMap(std::forward<Observable>(o), std::forward<CollectionSelector>(s), ResultSelectorType(), std::forward<Coordination>(cn)));
+        return Result(make_type_erased<Value>(ConcatMap(std::forward<Observable>(o), std::forward<CollectionSelector>(s), ResultSelectorType(), std::forward<Coordination>(cn))));
     }
 
     template<class Observable, class CollectionSelector, class ResultSelector,
@@ -347,10 +349,11 @@ struct member_overload<concat_map_tag>
         class CollectionValueType = rxu::value_type_t<CollectionType>,
         class ResultSelectorType = rxu::decay_t<ResultSelector>,
         class Value = rxu::callable_result_t<ResultSelectorType, SourceValue, CollectionValueType>,
-        class Result = observable<Value, ConcatMap>
+        class TypeErased = type_erased_observable_t<Value, ConcatMap>,
+        class Result = observable<Value, TypeErased>
     >
     static Result member(Observable&& o, CollectionSelector&& s, ResultSelector&& rs) {
-        return Result(ConcatMap(std::forward<Observable>(o), std::forward<CollectionSelector>(s), std::forward<ResultSelector>(rs), identity_current_thread()));
+        return Result(make_type_erased<Value>(ConcatMap(std::forward<Observable>(o), std::forward<CollectionSelector>(s), std::forward<ResultSelector>(rs), identity_current_thread())));
     }
 
     template<class Observable, class CollectionSelector, class ResultSelector, class Coordination,
@@ -364,10 +367,11 @@ struct member_overload<concat_map_tag>
         class CollectionValueType = rxu::value_type_t<CollectionType>,
         class ResultSelectorType = rxu::decay_t<ResultSelector>,
         class Value = rxu::callable_result_t<ResultSelectorType, SourceValue, CollectionValueType>,
-        class Result = observable<Value, ConcatMap>
+        class TypeErased = type_erased_observable_t<Value, ConcatMap>,
+        class Result = observable<Value, TypeErased>
     >
     static Result member(Observable&& o, CollectionSelector&& s, ResultSelector&& rs, Coordination&& cn) {
-        return Result(ConcatMap(std::forward<Observable>(o), std::forward<CollectionSelector>(s), std::forward<ResultSelector>(rs), std::forward<Coordination>(cn)));
+        return Result(make_type_erased<Value>(ConcatMap(std::forward<Observable>(o), std::forward<CollectionSelector>(s), std::forward<ResultSelector>(rs), std::forward<Coordination>(cn))));
     }
 
     template<class... AN>

@@ -248,10 +248,11 @@ struct member_overload<concat_tag>
         class SourceValue = rxu::value_type_t<Observable>,
         class Concat = rxo::detail::concat<SourceValue, rxu::decay_t<Observable>, identity_one_worker>,
         class Value = rxu::value_type_t<SourceValue>,
-        class Result = observable<Value, Concat>
+        class TypeErased = type_erased_observable_t<Value, Concat>,
+        class Result = observable<Value, TypeErased>
     >
     static Result member(Observable&& o) {
-        return Result(Concat(std::forward<Observable>(o), identity_current_thread()));
+        return Result(make_type_erased<Value>(Concat(std::forward<Observable>(o), identity_current_thread())));
     }
 
     template<class Observable, class Coordination,
@@ -261,10 +262,11 @@ struct member_overload<concat_tag>
         class SourceValue = rxu::value_type_t<Observable>,
         class Concat = rxo::detail::concat<SourceValue, rxu::decay_t<Observable>, rxu::decay_t<Coordination>>,
         class Value = rxu::value_type_t<SourceValue>,
-        class Result = observable<Value, Concat>
+        class TypeErased = type_erased_observable_t<Value, Concat>,
+        class Result = observable<Value, TypeErased>
     >
     static Result member(Observable&& o, Coordination&& cn) {
-        return Result(Concat(std::forward<Observable>(o), std::forward<Coordination>(cn)));
+        return Result(make_type_erased<Value>(Concat(std::forward<Observable>(o), std::forward<Coordination>(cn))));
     }
 
     template<class Observable, class Value0, class... ValueN,
@@ -275,10 +277,11 @@ struct member_overload<concat_tag>
         class ObservableObservable = observable<SourceValue>,
         class Concat = typename rxu::defer_type<rxo::detail::concat, SourceValue, ObservableObservable, identity_one_worker>::type,
         class Value = rxu::value_type_t<Concat>,
-        class Result = observable<Value, Concat>
+        class TypeErased = type_erased_observable_t<Value, Concat>,
+        class Result = observable<Value, TypeErased>
     >
     static Result member(Observable&& o, Value0&& v0, ValueN&&... vn) {
-        return Result(Concat(rxs::from(o.as_dynamic(), v0.as_dynamic(), vn.as_dynamic()...), identity_current_thread()));
+        return Result(make_type_erased<Value>(Concat(rxs::from(o.as_dynamic(), v0.as_dynamic(), vn.as_dynamic()...), identity_current_thread())));
     }
 
     template<class Observable, class Coordination, class Value0, class... ValueN,
@@ -290,10 +293,11 @@ struct member_overload<concat_tag>
         class ObservableObservable = observable<SourceValue>,
         class Concat = typename rxu::defer_type<rxo::detail::concat, SourceValue, ObservableObservable, rxu::decay_t<Coordination>>::type,
         class Value = rxu::value_type_t<Concat>,
-        class Result = observable<Value, Concat>
+        class TypeErased = type_erased_observable_t<Value, Concat>,
+        class Result = observable<Value, TypeErased>
     >
     static Result member(Observable&& o, Coordination&& cn, Value0&& v0, ValueN&&... vn) {
-        return Result(Concat(rxs::from(o.as_dynamic(), v0.as_dynamic(), vn.as_dynamic()...), std::forward<Coordination>(cn)));
+        return Result(make_type_erased<Value>(Concat(rxs::from(o.as_dynamic(), v0.as_dynamic(), vn.as_dynamic()...), std::forward<Coordination>(cn))));
     }
 
     template<class... AN>

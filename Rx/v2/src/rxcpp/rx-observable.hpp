@@ -32,6 +32,88 @@ struct has_on_subscribe_for
 
 }
 
+template<typename T>
+struct vtable
+{
+    void (*on_subscribe)(const void* const, subscriber<T>&&){};
+    void (*on_connect)(const void* const, composite_subscription&&){};
+
+    void (*destroy_at)(void*);
+    void (*copy_to)(const void*, void*);
+    void (*move_to)(void*, void*);
+
+    template<typename SO>
+    static const vtable* create() noexcept
+    {
+        static vtable s_res{
+            [](const void* const ptr, subscriber<T>&& sub) { static_cast<const SO*>(ptr)->on_subscribe(std::move(sub)); },
+            [](const void* const ptr, composite_subscription&& cs) { static_cast<const SO*>(ptr)->on_connect(std::move(cs)); },
+            [](void* const ptr) { static_cast<SO*>(ptr)->~SO(); },
+            [](const void* const origin, void* const dest) { ::new (dest) SO(*static_cast<const SO*>(origin)); },
+            [](void* const origin, void* const dest) { ::new (dest) SO(std::move(*static_cast<SO*>(origin))); }
+        };
+        return &s_res;
+    }
+};
+
+template<typename T>
+struct construct_with{};
+
+template <typename T, std::size_t size, std::size_t alignment>
+class type_erased_observable
+	: public rxcpp::sources::source_base<T> 
+{
+public:
+    template<typename SO>
+    explicit type_erased_observable(construct_with<SO>, SO&& so)
+        : vtable_{vtable<T>::template create<std::decay_t<SO>>()}
+    {
+        ::new (static_cast<void*>(data_)) std::decay_t<SO>(std::forward<SO>(so));
+    }
+
+    type_erased_observable(const type_erased_observable& other) noexcept
+        : vtable_(other.vtable_)
+    {
+        vtable_->copy_to(other.data_, data_);
+    }
+
+    type_erased_observable(type_erased_observable&& other) noexcept
+        : vtable_(other.vtable_)
+    {
+        vtable_->move_to(other.data_, data_);
+    }
+
+    ~type_erased_observable() noexcept
+    {
+        vtable_->destroy_at(data_);
+    }
+
+	void on_subscribe(subscriber<T> o) const {
+        vtable_->on_subscribe(data_, std::move(o));
+    }
+
+    template<class Subscriber>
+    typename std::enable_if_t<is_subscriber<Subscriber>::value, void>
+    on_subscribe(Subscriber o) const {
+        vtable_->on_subscribe(data_, o.as_dynamic());
+    }
+
+    void on_connect(composite_subscription cs) const {
+        vtable_->on_connect(data_, std::move(cs));
+    }
+
+private:
+    alignas(alignment) std::uint8_t data_[size]{};
+    const vtable<T>* vtable_;
+};
+
+template<class T, class Source> using type_erased_observable_t = type_erased_observable<T, sizeof(Source), alignof(Source)>;
+
+template<class T, class Source>
+auto make_type_erased(Source&& s) {
+    return type_erased_observable<T, sizeof(Source), alignof(Source)>(construct_with<Source>{}, std::forward<Source>(s));
+}
+
 template<class T>
 class dynamic_observable
     : public rxs::source_base<T>

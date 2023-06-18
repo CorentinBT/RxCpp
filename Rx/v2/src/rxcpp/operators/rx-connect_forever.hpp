@@ -71,10 +71,11 @@ struct member_overload<connect_forever_tag>
         class SourceValue = rxu::value_type_t<ConnectableObservable>,
         class ConnectForever = rxo::detail::connect_forever<SourceValue, rxu::decay_t<ConnectableObservable>>,
         class Value = rxu::value_type_t<ConnectForever>,
-        class Result = observable<Value, ConnectForever>
-        >
+        class TypeErased = type_erased_observable_t<Value, ConnectForever>,
+        class Result = observable<Value, TypeErased>
+    >
     static Result member(ConnectableObservable&& o) {
-        return Result(ConnectForever(std::forward<ConnectableObservable>(o)));
+        return Result(make_type_erased<Value>(ConnectForever(std::forward<ConnectableObservable>(o))));
     }
 
     template<class... AN>

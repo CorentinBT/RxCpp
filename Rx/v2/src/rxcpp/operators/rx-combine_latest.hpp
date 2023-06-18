@@ -253,10 +253,12 @@ struct member_overload<combine_latest_tag>
             all_observables<Observable, ObservableN...>>,
         class combine_latest = rxo::detail::combine_latest<identity_one_worker, rxu::detail::pack, rxu::decay_t<Observable>, rxu::decay_t<ObservableN>...>,
         class Value = rxu::value_type_t<combine_latest>,
-        class Result = observable<Value, combine_latest>>
+        class TypeErased = type_erased_observable_t<Value, combine_latest>,
+        class Result = observable<Value, TypeErased>
+    >
     static Result member(Observable&& o, ObservableN&&... on)
     {
-        return Result(combine_latest(identity_current_thread(), rxu::pack(), std::make_tuple(std::forward<Observable>(o), std::forward<ObservableN>(on)...)));
+        return Result(make_type_erased<Value>(combine_latest(identity_current_thread(), rxu::pack(), std::make_tuple(std::forward<Observable>(o), std::forward<ObservableN>(on)...))));
     }
 
     template<class Observable, class Selector, class... ObservableN,
@@ -266,10 +268,12 @@ struct member_overload<combine_latest_tag>
         class ResolvedSelector = rxu::decay_t<Selector>,
         class combine_latest = rxo::detail::combine_latest<identity_one_worker, ResolvedSelector, rxu::decay_t<Observable>, rxu::decay_t<ObservableN>...>,
         class Value = rxu::value_type_t<combine_latest>,
-        class Result = observable<Value, combine_latest>>
+        class TypeErased = type_erased_observable_t<Value, combine_latest>,
+        class Result = observable<Value, TypeErased>
+    >
     static Result member(Observable&& o, Selector&& s, ObservableN&&... on)
     {
-        return Result(combine_latest(identity_current_thread(), std::forward<Selector>(s), std::make_tuple(std::forward<Observable>(o), std::forward<ObservableN>(on)...)));
+        return Result(make_type_erased<Value>(combine_latest(identity_current_thread(), std::forward<Selector>(s), std::make_tuple(std::forward<Observable>(o), std::forward<ObservableN>(on)...))));
     }
 
     template<class Coordination, class Observable, class... ObservableN, 
@@ -278,10 +282,12 @@ struct member_overload<combine_latest_tag>
             all_observables<Observable, ObservableN...>>,
         class combine_latest = rxo::detail::combine_latest<Coordination, rxu::detail::pack, rxu::decay_t<Observable>, rxu::decay_t<ObservableN>...>,
         class Value = rxu::value_type_t<combine_latest>,
-        class Result = observable<Value, combine_latest>>
+        class TypeErased = type_erased_observable_t<Value, combine_latest>,
+        class Result = observable<Value, TypeErased>
+    >
     static Result member(Observable&& o, Coordination&& cn, ObservableN&&... on)
     {
-        return Result(combine_latest(std::forward<Coordination>(cn), rxu::pack(), std::make_tuple(std::forward<Observable>(o), std::forward<ObservableN>(on)...)));
+        return Result(make_type_erased<Value>(combine_latest(std::forward<Coordination>(cn), rxu::pack(), std::make_tuple(std::forward<Observable>(o), std::forward<ObservableN>(on)...))));
     }
 
     template<class Coordination, class Selector, class Observable, class... ObservableN,
@@ -292,10 +298,12 @@ struct member_overload<combine_latest_tag>
         class ResolvedSelector = rxu::decay_t<Selector>,
         class combine_latest = rxo::detail::combine_latest<Coordination, ResolvedSelector, rxu::decay_t<Observable>, rxu::decay_t<ObservableN>...>,
         class Value = rxu::value_type_t<combine_latest>,
-        class Result = observable<Value, combine_latest>>
+        class TypeErased = type_erased_observable_t<Value, combine_latest>,
+        class Result = observable<Value, TypeErased>
+    >
     static Result member(Observable&& o, Coordination&& cn, Selector&& s, ObservableN&&... on)
     {
-        return Result(combine_latest(std::forward<Coordination>(cn), std::forward<Selector>(s), std::make_tuple(std::forward<Observable>(o), std::forward<ObservableN>(on)...)));
+        return Result(make_type_erased<Value>(std::forward<Coordination>(cn), std::forward<Selector>(s), std::make_tuple(std::forward<Observable>(o), std::forward<ObservableN>(on)...)));
     }
 
     template<class... AN>

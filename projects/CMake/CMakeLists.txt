@@ -11,7 +11,7 @@ get_filename_component(RXCPP_DIR "${RXCPP_DIR}" PATH)
 
 MESSAGE( STATUS "RXCPP_DIR: " ${RXCPP_DIR} )
 
-if (NOT ${RXCPP_DISABLE_TESTS_AND_EXAMPLES})
+if (true)
     add_subdirectory(${RXCPP_DIR}/Rx/v2/test ${CMAKE_CURRENT_BINARY_DIR}/test)
 
     add_subdirectory(${RXCPP_DIR}/projects/doxygen ${CMAKE_CURRENT_BINARY_DIR}/projects/doxygen)

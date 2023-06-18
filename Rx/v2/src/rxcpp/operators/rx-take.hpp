@@ -145,11 +145,13 @@ struct member_overload<take_tag>
         class Enabled = rxu::enable_if_all_true_type_t<
             is_observable<Observable>>,
         class SourceValue = rxu::value_type_t<Observable>,
-        class Take = rxo::detail::take<SourceValue, rxu::decay_t<Observable>, rxu::decay_t<Count>>,
+        class Take = rxo::detail::take<SourceValue, rxu::decay_t<Observable>, rxu::decay_t<Count>>, 
         class Value = rxu::value_type_t<Take>,
-        class Result = observable<Value, Take>>
+        class TypeErased = type_erased_observable_t<Value, Take>,
+        class Result = observable<Value, TypeErased>
+    >
     static Result member(Observable&& o, Count&& c) {
-        return Result(Take(std::forward<Observable>(o), std::forward<Count>(c)));
+        return Result(make_type_erased<Value>(Take(std::forward<Observable>(o), std::forward<Count>(c))));
     }
 
     template<class... AN>
