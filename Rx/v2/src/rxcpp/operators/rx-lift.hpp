@@ -58,7 +58,9 @@ struct lift_traits
 };
 
 template<class ResultType, class SourceOperator, class Operator>
-struct lift_operator : public operator_base<typename lift_traits<ResultType, SourceOperator, Operator>::result_value_type>
+struct lift_operator 
+    : public operator_base<typename lift_traits<ResultType, SourceOperator, Operator>::result_value_type>
+    , public util::hide_this<lift_operator<ResultType, SourceOperator, Operator>>
 {
     using traits = lift_traits<ResultType, SourceOperator, Operator>;
     using source_operator_type = typename traits::source_operator_type;

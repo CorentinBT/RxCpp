@@ -478,15 +478,14 @@ template<class T, class SourceOperator>
 class observable
     : public observable_base<T>
 {
-    static_assert(std::is_same_v<T, typename SourceOperator::value_type>, "SourceOperator::value_type must be the same as T in observable<T, SourceOperator>");
-
     using this_type = observable<T, SourceOperator>;
 
 public:
-    using source_operator_type = rxu::decay_t<SourceOperator>;
+    using source_operator_type = rxu::unhide<SourceOperator>;
     mutable source_operator_type source_operator;
 
 private:
+    static_assert(std::is_same_v<T, typename source_operator_type::value_type>, "SourceOperator::value_type must be the same as T in observable<T, SourceOperator>");
 
     template<class U, class SO>
     friend class observable;
@@ -611,8 +610,8 @@ public:
      */
     template<class ResultType, class Operator>
     auto lift(Operator&& op) const
-        ->      observable<rxu::value_type_t<rxo::detail::lift_operator<ResultType, source_operator_type, Operator>>, rxo::detail::lift_operator<ResultType, source_operator_type, Operator>> {
-        return  observable<rxu::value_type_t<rxo::detail::lift_operator<ResultType, source_operator_type, Operator>>, rxo::detail::lift_operator<ResultType, source_operator_type, Operator>>(
+        ->      observable<rxu::value_type_t<rxo::detail::lift_operator<ResultType, source_operator_type, Operator>>, rxu::hide<rxo::detail::lift_operator<ResultType, source_operator_type, Operator>>> {
+        return  observable<rxu::value_type_t<rxo::detail::lift_operator<ResultType, source_operator_type, Operator>>, rxu::hide<rxo::detail::lift_operator<ResultType, source_operator_type, Operator>>>(
                                                                                                                       rxo::detail::lift_operator<ResultType, source_operator_type, Operator>(source_operator, std::forward<Operator>(op)));
         static_assert(detail::is_lift_function_for<T, subscriber<ResultType>, Operator>::value, "Function passed for lift() must have the signature subscriber<...>(subscriber<T, ...>)");
     }

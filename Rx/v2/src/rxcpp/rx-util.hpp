@@ -838,6 +838,84 @@ namespace detail {
 template <class T>
 struct negation : detail::not_value<T> {};
 
+template<auto T = []{}>
+constexpr auto unique() {
+  return T;
+}
+
+template<typename T>
+struct htb {
+	using unhide = T;
+};
+
+template<typename T, typename Tag = decltype(unique())>
+class hide_this : Tag {
+	using self_t = hide_this<T, Tag>;
+
+	friend auto hf(Tag*)
+	{
+		class h : public htb<T>{};
+		return h{};
+	}
+public:
+	using hide = decltype(hf(std::declval<self_t*>()));
+};
+
+template<class T>
+concept with_hide = requires{
+    typename T::hide;
+};
+
+template<class T>
+concept with_unhide = requires{
+    typename T::unhide;
+};
+
+template<class T>
+concept hidden = with_unhide<T> && (!with_hide<T>);
+
+template<class T>
+concept no_hide = hidden<T> || (!with_hide<T>);
+template<class T>
+concept yes_hide = (!hidden<T>) && with_hide<T>;
+
+template<class T>
+concept no_unhide = (!hidden<T>) && (!with_hide<T>);
+template<class T>
+concept yes_unhide = hidden<T>;
+
+template <class T>
+    requires no_hide<T> || yes_hide<T>
+struct hide_impl;
+
+template <no_hide T>
+struct hide_impl<T> {
+    using type = T;
+};
+template <yes_hide T>
+struct hide_impl<T> {
+    using type = typename T::hide;
+};
+
+template <class T>
+    requires no_unhide<T> || yes_unhide<T>
+struct unhide_impl;
+
+template <no_unhide T>
+struct unhide_impl<T> {
+  using type = T;
+};
+template <yes_unhide T>
+struct unhide_impl<T> {
+  using type = typename T::unhide;
+};
+
+template <class T>
+using hide = typename hide_impl<T>::type;
+
+template <class T>
+using unhide = typename unhide_impl<T>::type;
+
 }
 
 #if !RXCPP_USE_EXCEPTIONS
