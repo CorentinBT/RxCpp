@@ -838,75 +838,62 @@ namespace detail {
 template <class T>
 struct negation : detail::not_value<T> {};
 
-template<auto T = []{}>
-constexpr auto unique() {
-  return T;
-}
-
-template<typename T>
+template<class T>
 struct htb {
 	using unhide = T;
 };
 
-template<typename T, typename Tag = decltype(unique())>
-class hide_this : Tag {
-	using self_t = hide_this<T, Tag>;
+template<int ID>
+struct tag{};
 
-	friend auto hf(Tag*)
+template<int Tag>
+auto hf(void*);
+
+template<class T, int ID = __COUNTER__>
+class hide_this : tag<ID> {
+    template<int Tag>
+	friend auto hf(tag<ID>*)
 	{
 		class h : public htb<T>{};
 		return h{};
 	}
 public:
-	using hide = decltype(hf(std::declval<self_t*>()));
+	using hide = decltype(hf<ID>(std::declval<tag<ID>*>()));
 };
 
-template<class T>
-concept with_hide = requires{
-    typename T::hide;
-};
+template <class T, class C = types_checked>
+struct with_hide : std::false_type {};
 
-template<class T>
-concept with_unhide = requires{
-    typename T::unhide;
-};
+template <typename T>
+struct with_hide<T, types_checked_t<typename T::hide>> : std::true_type {};
 
-template<class T>
-concept hidden = with_unhide<T> && (!with_hide<T>);
+template <class T, class C = types_checked>
+struct with_unhide : std::false_type {};
 
-template<class T>
-concept no_hide = hidden<T> || (!with_hide<T>);
-template<class T>
-concept yes_hide = (!hidden<T>) && with_hide<T>;
+template <typename T>
+struct with_unhide<T, types_checked_t<typename T::unhide>> : std::true_type {};
 
-template<class T>
-concept no_unhide = (!hidden<T>) && (!with_hide<T>);
-template<class T>
-concept yes_unhide = hidden<T>;
-
-template <class T>
-    requires no_hide<T> || yes_hide<T>
+template <class T, class = void>
 struct hide_impl;
 
-template <no_hide T>
-struct hide_impl<T> {
-    using type = T;
-};
-template <yes_hide T>
-struct hide_impl<T> {
-    using type = typename T::hide;
-};
-
 template <class T>
-    requires no_unhide<T> || yes_unhide<T>
-struct unhide_impl;
-
-template <no_unhide T>
-struct unhide_impl<T> {
+struct hide_impl<T, std::enable_if_t<!with_hide<T>::value>> {
   using type = T;
 };
-template <yes_unhide T>
-struct unhide_impl<T> {
+template <class T>
+struct hide_impl<T, std::enable_if_t<with_hide<T>::value>> {
+  using type = typename T::hide;
+};
+
+template <class T, class = void>
+struct unhide_impl;
+
+template <class T>
+struct unhide_impl<T, std::enable_if_t<!with_unhide<T>::value>> {
+  using type = T;
+};
+template <class T>
+struct unhide_impl<T, std::enable_if_t<with_unhide<T>::value>> {
   using type = typename T::unhide;
 };
 
